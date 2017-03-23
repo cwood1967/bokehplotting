@@ -22,6 +22,10 @@ class scatterpage():
         self.colnames = self.data.keys()
         # print self.data
 
+        self.colortable = np.asarray(['#8dd3c7', '#ffffb3' , '#bebada', '#fb8072' ,
+                           '#80b1d3' , '#fdb462', '#b3de69', '#fccde5',
+                           '#d9d9d9', '#bc80bd', '#ccebc5', '#ffed6f'])
+
     def df_to_dict(self, df):
         keys = df.keys()
         data = dict()
@@ -131,15 +135,28 @@ class scatterpage():
             cr[i] = self.df[self.colorcol][i]
 
         print cr[0:10]
-        colmax = np.amax(self.df[self.colorcol])
-        colmin = np.amin(self.df[self.colorcol])
 
-        cr = 100 *(cr - colmin)/(colmax - colmin)
-        cg = np.flip(cr, 0)
-        print cr[0:10]
-        colors = np.asarray([
-                                "#%02x%02x%02x" % (150+int(r), 150+ int(g), 200) for r, g
-                                in zip(cr, cg)])
+        dc = self.data[self.colorcol]
+        colmax = np.amax(dc)
+        colmin = np.amin(dc)
+        delt = 1.*(colmax - colmin)/(len(self.colortable) - 1)
+
+        ## the bin number for each point
+        # print dc
+        # print colmin, colmax
+        # print delt
+        bins = (dc - colmin) / delt
+        bins = bins.astype(np.int8)
+        # print bins
+        # for i, b in enumerate(bins):
+        colors = self.colortable[bins]
+
+        # cr = 100 *(cr - colmin)/(colmax - colmin)
+        # cg = np.flip(cr, 0)
+        # print cr[0:10]
+        # colors = np.asarray([
+        #                         "#%02x%02x%02x" % (150+int(r), 150+ int(g), 200) for r, g
+        #                         in zip(cr, cg)])
 
         print colors[0:10]
         self.color_array = colors
@@ -163,11 +180,12 @@ class scatterpage():
                                        source=self.source,
                                        size='sizes',
                                        fill_color='colors',
-                                       fill_alpha=0.9,
-                                       line_color=None,
+                                       fill_alpha=0.95,
+                                       line_color='#888888',
+                                       line_width=.5,
                                        selection_line_color='blue',
                                        nonselection_fill_color='colors',
-                                       nonselection_fill_alpha=0.5)
+                                       nonselection_fill_alpha=0.65)
 
         self.plot.data_source.on_change('selected', self.update)
         self.makecallbackx()
