@@ -134,11 +134,11 @@ class scatterpage():
         colmax = np.amax(self.df[self.colorcol])
         colmin = np.amin(self.df[self.colorcol])
 
-        cr = 200 *(cr - colmin)/(colmax - colmin)
+        cr = 100 *(cr - colmin)/(colmax - colmin)
         cg = np.flip(cr, 0)
         print cr[0:10]
         colors = np.asarray([
-                                "#%02x%02x%02x" % (50+int(r), 50+ int(g), 20) for r, g
+                                "#%02x%02x%02x" % (150+int(r), 150+ int(g), 200) for r, g
                                 in zip(cr, cg)])
 
         print colors[0:10]
@@ -211,6 +211,11 @@ class scatterpage():
             }
             table, th, td {
             border: 1px solid black;
+            font-size: 16px;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
         }
         </style>\n'''
         s += '<table>\n'
@@ -226,4 +231,18 @@ class scatterpage():
 
 
 
-
+## colors for color table
+'''
+#8dd3c7
+#ffffb3
+#bebada
+#fb8072
+#80b1d3
+#fdb462
+#b3de69
+#fccde5
+#d9d9d9
+#bc80bd
+#ccebc5
+#ffed6f
+'''
