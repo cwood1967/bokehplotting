@@ -210,7 +210,7 @@ class scatterpage():
         for name in namelist:
             v = self.df[name][index]
             try:
-                s += '<tr><td>%s</td><td>%.3f</td></tr>\n' % (name, float(v))
+                s += '<tr><td>%s20</td><td>%.3f</td></tr>\n' % (name, float(v))
             except:
                 pass
         s += '</table>'
