@@ -205,12 +205,19 @@ class scatterpage():
     def datarow_to_table(self, index):
 
         namelist = self.colnames
-
-        s = '<table>\n'
+        s = '''<style>
+            table {
+                border-collapse: collapse;
+            }
+            table, th, td {
+            border: 1px solid black;
+        }
+        </style>\n'''
+        s += '<table>\n'
         for name in namelist:
             v = self.df[name][index]
             try:
-                s += '<tr><td>%s20</td><td>%.3f</td></tr>\n' % (name, float(v))
+                s += '<tr><td>%s</td><td>%.3f</td></tr>\n' % (name, float(v))
             except:
                 pass
         s += '</table>'
