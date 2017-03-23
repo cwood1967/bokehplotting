@@ -2,9 +2,13 @@ import os
 
 from bokeh.plotting import curdoc
 import scatterpage
+from os.path import dirname, join
 
-file = 'hobbit01.csv'
 
+
+filename = 'hobbit01.csv'
+file = join(dirname(__file__), filename)
+print file
 p = scatterpage.scatterpage(file)
 p.setxcol('sumhobbit24hour')
 p.setycol('sumlinc24hour')
