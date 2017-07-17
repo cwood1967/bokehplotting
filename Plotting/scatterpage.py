@@ -10,7 +10,7 @@ from bokeh.layouts import row, column, layout, widgetbox
 from bokeh.layouts import widgetbox
 from bokeh.models.widgets import Dropdown, Select
 from bokeh.models.callbacks import CustomJS
-from bokeh.io import output_server, push
+# from bokeh.io import output_server, push
 
 import numpy as np
 import pandas
@@ -61,8 +61,8 @@ class scatterpage():
 
     def load_data(self):
         self.data = self.df_to_dict(self.df)
-        self.colnames = self.data.keys()
-        keys = self.data.keys()
+        self.colnames = list(self.data.keys())
+        keys = list(self.data.keys())
         self.xcol = keys[0]
         self.ycol = keys[1]
         self.data['x'] = self.data[self.xcol]
@@ -74,7 +74,7 @@ class scatterpage():
         print('done with color array')
 
     def page_setup(self):
-        keys = self.data.keys()
+        keys = list(self.data.keys())
         self.settools(
             "tap, crosshair,pan ,wheel_zoom,box_zoom,"
             "undo,redo,reset,save,box_select")
@@ -138,7 +138,7 @@ class scatterpage():
         self.page_setup()
 
     def df_to_dict(self, df):
-        keys = df.keys()
+        keys = list(df.keys())
         r = df.iloc[[0]]
         data = OrderedDict()
         for i, k in enumerate(keys, 1):
@@ -286,7 +286,7 @@ class scatterpage():
         colmin = np.amin(dc)
         delt = 1.*(colmax - colmin)/(len(self.colortable) - 1)
 
-        bins = (dc - colmin) / delt
+        bins = (dc - colmin) // delt
         bins = bins.astype(np.int8)
 
         colors = self.colortable[bins]
@@ -298,7 +298,7 @@ class scatterpage():
         sz = self.data[self.sizecol]
         szmax = np.amax(self.data[self.sizecol])
         szmin = np.amin(self.data[self.sizecol])
-        sizescale = 5 + 10 * (sz - szmin) / (szmax - szmin)
+        sizescale = 5 + 10 * (sz - szmin) // (szmax - szmin)
         self.size_array = sizescale
         self.data['sizes'] = sizescale
 
@@ -328,7 +328,7 @@ class scatterpage():
         self.figure.yaxis.axis_label = self.ycol
         # self.makecallbackx()
         # self.makecallbacky()
-        print "plot done"
+        print("plot done")
 
     def update(self, attr, old, new):
 
@@ -389,7 +389,7 @@ class scatterpage():
         # row3 = row(self.colorselect, self.sizeselect)
         self.inside = column(top, row1)
         # self.cols = [col1, col2, col3]
-        print "layout done"
+        print("layout done")
 
     def datarow_to_table(self, index):
 
@@ -433,7 +433,7 @@ class scatterpage():
         data['fakesizes'] = s
         self.datafile = 'fake data'
         self.data = data
-        self.colnames = data.keys()
+        self.colnames = list(data.keys())
         self.data['x'] = x
         self.data['y'] = y
         self.setxcol('xfake')

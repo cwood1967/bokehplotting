@@ -15,7 +15,7 @@ filename = 'hobbit01.csv'
 
 # curdoc().add_root(fp)
 file = join(dirname(__file__), filename)
-print file
+print(file)
 p = scatterpage.scatterpage(datafile=None, datadir=dirpath)
 
 # p.setxcol('sumhobbit24hour')
