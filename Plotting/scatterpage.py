@@ -67,9 +67,17 @@ class scatterpage():
         self.ycol = keys[1]
         self.data['x'] = self.data[self.xcol]
         self.data['y'] = self.data[self.ycol]
-        self.colorcol = keys[2]
+        
+        try:
+            self.colorcol = keys[2]
+        except:
+            self.colorcal = keys[-1]
         self.make_color_array()
-        self.sizecol = keys[3]
+        try:
+            self.sizecol = keys[3]
+        except:
+            self.sizecol = keys[-1]
+
         self.make_size_array()
         print('done with color array')
 
