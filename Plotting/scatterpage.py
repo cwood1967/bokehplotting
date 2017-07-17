@@ -67,7 +67,7 @@ class scatterpage():
         self.ycol = keys[1]
         self.data['x'] = self.data[self.xcol]
         self.data['y'] = self.data[self.ycol]
-        
+
         try:
             self.colorcol = keys[2]
         except:
