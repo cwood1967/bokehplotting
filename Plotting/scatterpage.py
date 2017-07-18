@@ -10,6 +10,12 @@ from bokeh.layouts import row, column, layout, widgetbox
 from bokeh.layouts import widgetbox
 from bokeh.models.widgets import Dropdown, Select
 from bokeh.models.callbacks import CustomJS
+from bokeh.models.mappers import LinearColorMapper
+from bokeh.models.tickers import BasicTicker, FixedTicker
+from bokeh.models import ColorBar, NumeralTickFormatter
+from bokeh import palettes
+
+
 # from bokeh.io import output_server, push
 
 import numpy as np
@@ -31,14 +37,17 @@ class scatterpage():
 
     def __init__(self, datafile=None, datadir=None):
 
-        self.colortable = np.asarray(
-            ['#8dd3c7', '#ffffb3', '#bebada', '#fb8072',
-             '#80b1d3', '#fdb462', '#b3de69', '#fccde5',
-             '#d9d9d9', '#bc80bd', '#ccebc5', '#ffed6f'])
-
+        # self.colortable = np.asarray(
+        #     ['#8dd3c7', '#ffffb3', '#bebada', '#fb8072',
+        #      '#80b1d3', '#fdb462', '#b3de69', '#fccde5',
+        #      '#d9d9d9', '#bc80bd', '#ccebc5', '#ffed6f'])
+        self.colortable = np.asarray(palettes.inferno(128))
+        print(self.colortable)
         self.layout = None
         self.excelfile = None
         self.doc = curdoc()
+        self.sheetname = 'example data'
+        self.color_bar = None
         self.fakedata()
         self.datadir = datadir
         self.page_setup()
@@ -292,14 +301,61 @@ class scatterpage():
         dc = self.data[self.colorcol]
         colmax = np.amax(dc)
         colmin = np.amin(dc)
+
         delt = 1.*(colmax - colmin)/(len(self.colortable) - 1)
 
         bins = (dc - colmin) // delt
         bins = bins.astype(np.int8)
 
+        self.binedges = np.arange(colmin, colmax + delt, (colmax-colmin)/8)
         colors = self.colortable[bins]
+
         self.color_array = colors
         self.data['colors'] = colors
+
+        self.ticker =  FixedTicker(ticks=self.binedges)
+        self.mapper = LinearColorMapper(palette=self.colortable)
+        if self.color_bar is not None:
+            self.color_bar.ticker=self.ticker
+            self.color_bar.color_mapper=self.mapper
+
+        #self.formatter = NumeralTickFormatter(format="%5.2e")
+
+        self.mapper.low = colmin
+        self.mapper.high = colmax
+
+        # if self.color_bar is not None:
+        #     print('Please change the color bar')
+        #     self.color_bar.trigger('change')
+        # try:
+        #     self.figure.renderers.remove(self.color_bar)
+        #     self.mapper = LinearColorMapper(palette=self.colortable)
+        #     self.mapper.low = colmin
+        #     self.mapper.high = colmax
+        #     #self.mapper.trigger('change')
+        #     #self.old_color_bar = self.color_bar
+        #     self.color_bar = ColorBar(color_mapper=self.mapper,
+        #                               ticker=ticker,
+        #                               formatter=formatter,
+        #                               label_standoff=12, border_line_color=None,
+        #                               location=(4, 0))
+        #     self.figure.add_layout(self.color_bar, 'right')
+        #     # self.color_bar.ticker.ticks = self.binedges
+        #     #self.color_bar.trigger('change', self.color_bar, new_color_bar)
+        # except Exception as e:
+        #     print(e)
+        #     self.mapper = LinearColorMapper(palette=self.colortable,
+        #                                     low=colmin,
+        #                                     high=colmax)
+        #
+        #     self.color_bar = ColorBar(color_mapper=self.mapper,
+        #                               ticker=FixedTicker(ticks=self.binedges),
+        #                               label_standoff=12, border_line_color=None,
+        #                               location=(4, 0))
+        #
+        #     self.figure.add_layout(self.color_bar, 'right')
+
+
 
 
     def make_size_array(self):
@@ -312,11 +368,21 @@ class scatterpage():
 
     def makeplot(self):
 
+        dc = self.data[self.colorcol]
+        colmax = np.amax(dc)
+        colmin = np.amin(dc)
+
         title = self.datafile.split("/")[-1] + '\n' + self.sheetname
         self.source = ColumnDataSource(self.data)
         self.x = self.data[self.xcol]
         self.y = self.data[self.ycol]
-        self.figure = figure(tools=self.tools,title=title)
+        self.figure = figure(tools=self.tools, title=title,
+                             plot_width=600,
+                             plot_height=600,
+                             toolbar_location='above',
+                             min_border_right=100,
+                             min_border_top=100)
+
         self.plot = self.figure.circle(x='x', y='y',
                                        source=self.source,
                                        size='sizes',
@@ -328,7 +394,18 @@ class scatterpage():
                                        nonselection_fill_color='colors',
                                        nonselection_fill_alpha=0.65)
 
+        print("min max", np.amin(self.y), np.amax(self.y))
+        self.mapper = LinearColorMapper(palette=self.colortable,
+                                        low=colmin,
+                                        high=colmax)
 
+        self.color_bar = ColorBar(color_mapper=self.mapper,
+                                  ticker=self.ticker,
+                                  #formatter=self.formatter,
+                                  label_standoff=12, border_line_color=None,
+                                  location=(0, 0))
+
+        self.figure.add_layout(self.color_bar, 'right')
         print(self.plot, self.figure)
         self.plot.data_source.on_change('selected', self.update)
 
@@ -428,7 +505,7 @@ class scatterpage():
 
     def fakedata(self):
 
-        x = np.arange(0,1,1)
+        x = np.arange(0,10,.1)
         y = np.random.uniform(-5,5, len(x))
         c = np.random.uniform(0,10, len(x))
         s = np.random.uniform(0,10, len(x))
