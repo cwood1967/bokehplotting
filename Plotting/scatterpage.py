@@ -42,7 +42,7 @@ class scatterpage():
         #      '#80b1d3', '#fdb462', '#b3de69', '#fccde5',
         #      '#d9d9d9', '#bc80bd', '#ccebc5', '#ffed6f'])
         self.colortable = np.asarray(palettes.inferno(128))
-        print(self.colortable)
+
         self.layout = None
         self.excelfile = None
         self.doc = curdoc()
@@ -58,10 +58,12 @@ class scatterpage():
         self.datafile = datafile
         if datafile.endswith('xlsx'):
             self.excelfile = pandas.ExcelFile(datafile)
+            self.is_xlsx = True
         else:
             self.excelfile = None
             self.df = self.openfile()
             self.load_data()
+            self.is_xlsx = False
 
 
     def load_data_sheet(self, sheetname):
@@ -80,7 +82,8 @@ class scatterpage():
         try:
             self.colorcol = keys[2]
         except:
-            self.colorcal = keys[-1]
+            self.colorcol = keys[-1]
+
         self.make_color_array()
         try:
             self.sizecol = keys[3]
@@ -88,7 +91,6 @@ class scatterpage():
             self.sizecol = keys[-1]
 
         self.make_size_array()
-        print('done with color array')
 
     def page_setup(self):
         keys = list(self.data.keys())
@@ -106,13 +108,21 @@ class scatterpage():
         self.create_size_select()
 
         self.createlayout()
+
+        self.layout = None
+
         if self.layout:
             self.layout.children[0] = self.inside
         else:
+            print("In layout 2")
             self.layout = row(self.inside,
-                                 sizing_mode='stretch_both')
+                              sizing_mode='stretch_both')
 
+        self.doc.clear()
         self.doc.add_root(self.layout)
+
+    def page_update(self):
+        pass
 
     def make_file_picker(self, dirname):
         files = getfilelist(dirname)
@@ -124,13 +134,17 @@ class scatterpage():
 
 
     def callbackpicker(self, attr, old, new):
-            print(new, old)
             self.datafile = self.datadir + os.sep + new
             ##need to handle if the sheet is an excel file
             self.load_data_file(self.datafile)
             self.fileselect.value = new
             self.sheetname = "no sheet selected"
-            self.page_setup()
+            if not self.is_xlsx:
+                self.page_setup()
+            else:
+                names = self.excelfile.sheet_names
+                names.insert(0, "aaaSelect a sheet")
+                self.sheet_select.options=names
 
     def make_sheet_picker(self):
         try:
@@ -147,8 +161,6 @@ class scatterpage():
 
     def callback_sheetpicker(self, attr, old, new):
         ### do stuff for when a sheet is selected
-        print("New in sheet pick", new)
-        print(old)
         self.load_data_sheet(new)
         self.sheet_select.value = new
         self.sheetname = new
@@ -173,14 +185,11 @@ class scatterpage():
     def create_x_dropdown(self, value=None):
         menu = []
         for n in self.colnames:
-            print(n)
             if n in ['x', 'y']:
-                print("Going")
                 continue
             menu.append((n, n))
         select = Select(title="X axis:", value=self.xcol,
                                    options=self.colnames)
-        # dropdown.callback = self.callbackx
         select.on_change("value", self.callbackx)
         self.xwidgetbox = select
 
@@ -193,7 +202,6 @@ class scatterpage():
         select = Select(title="Y axis:", value=self.ycol,
                                    options=self.colnames)
 
-        # dropdown.callback = self.callbacky
         select.on_change("value", self.callbacky)
         self.ywidgetbox = select
 
@@ -228,14 +236,12 @@ class scatterpage():
         self.data['x'] = self.data[self.xcol]
         self.source.data = self.data
         self.figure.xaxis.axis_label = self.xcol
-        # self.makeplot()
 
     def callbacky(self, attr, old, new):
         self.setycol(new)
         self.data['y'] = self.data[self.ycol]
         self.source.data = self.data
         self.figure.xaxis.axis_label = self.ycol
-        # self.makeplot()
 
     def makecallbackx(self):
 
@@ -286,18 +292,14 @@ class scatterpage():
         #self.ywidgetbox.value = value
 
     def setcolorcol(self, colorcol, value=None):
-        print(colorcol, value)
         self.colorcol = colorcol
-        # self.colorselect.value = value
         self.make_color_array()
 
     def setsizecol(self, sizecol, value=None):
         self.sizecol = sizecol
-        #self.sizeselect.value = value
         self.make_size_array()
 
     def make_color_array(self):
-        print("color--col", self.colorcol)
         dc = self.data[self.colorcol]
         colmax = np.amax(dc)
         colmin = np.amin(dc)
@@ -315,47 +317,16 @@ class scatterpage():
 
         self.ticker =  FixedTicker(ticks=self.binedges)
         self.mapper = LinearColorMapper(palette=self.colortable)
+
         if self.color_bar is not None:
-            self.color_bar.ticker=self.ticker
-            self.color_bar.color_mapper=self.mapper
+            self.color_bar.ticker = self.ticker
+            self.color_bar.color_mapper = self.mapper
 
         #self.formatter = NumeralTickFormatter(format="%5.2e")
 
         self.mapper.low = colmin
         self.mapper.high = colmax
-
-        # if self.color_bar is not None:
-        #     print('Please change the color bar')
-        #     self.color_bar.trigger('change')
-        # try:
-        #     self.figure.renderers.remove(self.color_bar)
-        #     self.mapper = LinearColorMapper(palette=self.colortable)
-        #     self.mapper.low = colmin
-        #     self.mapper.high = colmax
-        #     #self.mapper.trigger('change')
-        #     #self.old_color_bar = self.color_bar
-        #     self.color_bar = ColorBar(color_mapper=self.mapper,
-        #                               ticker=ticker,
-        #                               formatter=formatter,
-        #                               label_standoff=12, border_line_color=None,
-        #                               location=(4, 0))
-        #     self.figure.add_layout(self.color_bar, 'right')
-        #     # self.color_bar.ticker.ticks = self.binedges
-        #     #self.color_bar.trigger('change', self.color_bar, new_color_bar)
-        # except Exception as e:
-        #     print(e)
-        #     self.mapper = LinearColorMapper(palette=self.colortable,
-        #                                     low=colmin,
-        #                                     high=colmax)
-        #
-        #     self.color_bar = ColorBar(color_mapper=self.mapper,
-        #                               ticker=FixedTicker(ticks=self.binedges),
-        #                               label_standoff=12, border_line_color=None,
-        #                               location=(4, 0))
-        #
-        #     self.figure.add_layout(self.color_bar, 'right')
-
-
+        print("Done with color array")
 
 
     def make_size_array(self):
@@ -365,6 +336,17 @@ class scatterpage():
         sizescale = 5 + 10 * (sz - szmin) // (szmax - szmin)
         self.size_array = sizescale
         self.data['sizes'] = sizescale
+
+    def updataplotdata(self):
+        dc = self.data[self.colorcol]
+        colmax = np.amax(dc)
+        colmin = np.amin(dc)
+
+        title = self.datafile.split("/")[-1] + '\n' + self.sheetname
+        self.source = ColumnDataSource(self.data)
+        self.x = self.data[self.xcol]
+        self.y = self.data[self.ycol]
+
 
     def makeplot(self):
 
@@ -394,7 +376,6 @@ class scatterpage():
                                        nonselection_fill_color='colors',
                                        nonselection_fill_alpha=0.65)
 
-        print("min max", np.amin(self.y), np.amax(self.y))
         self.mapper = LinearColorMapper(palette=self.colortable,
                                         low=colmin,
                                         high=colmax)
@@ -406,13 +387,10 @@ class scatterpage():
                                   location=(0, 0))
 
         self.figure.add_layout(self.color_bar, 'right')
-        print(self.plot, self.figure)
         self.plot.data_source.on_change('selected', self.update)
 
         self.figure.xaxis.axis_label = self.xcol
         self.figure.yaxis.axis_label = self.ycol
-        # self.makecallbackx()
-        # self.makecallbacky()
         print("plot done")
 
     def update(self, attr, old, new):
