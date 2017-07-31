@@ -363,6 +363,7 @@ class scatterpage():
                              plot_height=600,
                              toolbar_location='above',
                              min_border_right=100,
+                             min_border_left=100,
                              min_border_top=100)
 
         self.plot = self.figure.circle(x='x', y='y',
