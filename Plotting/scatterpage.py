@@ -241,7 +241,7 @@ class scatterpage():
         self.setycol(new)
         self.data['y'] = self.data[self.ycol]
         self.source.data = self.data
-        self.figure.xaxis.axis_label = self.ycol
+        self.figure.yaxis.axis_label = self.ycol
 
     def makecallbackx(self):
 
