@@ -42,7 +42,7 @@ class scatterpage():
         #      '#80b1d3', '#fdb462', '#b3de69', '#fccde5',
         #      '#d9d9d9', '#bc80bd', '#ccebc5', '#ffed6f'])
         self.colortable = np.asarray(palettes.inferno(128))
-
+        self.imagecol = 'URL'
         self.layout = None
         self.excelfile = None
         self.doc = curdoc()
@@ -401,8 +401,8 @@ class scatterpage():
         index = int(new['1d']['indices'][0])
 
         try:
-            if 'http' in self.df['url24hour'][index]:
-                text = '<img src=\"' + self.df['url24hour'][index] + \
+            if 'http' in self.df[self.imagecol][index]:
+                text = '<img src=\"' + self.df[self.imagecol][index] + \
                        '" height="512"/>'
         except:
             text = '<img src="null" height="512" alt="No Image available"/>'
